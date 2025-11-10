@@ -25,6 +25,21 @@ phases:
       - echo "Pushing image to ECR..."
       - docker push ${REPO_URI}:${IMAGE_TAG}
       - echo "Build completed successfully!"
+       
+        # NEW: EKS Deployment Commands
+      - echo "Configuring kubectl for EKS..."
+      - aws eks update-kubeconfig --region ${AWS_REGION} --name ${EKS_CLUSTER_NAME}
+      - kubectl config current-context
+
+      - echo "Deploying to EKS cluster..."
+      - kubectl apply -f k8s/ --timeout=300s
+
+      - echo "Waiting for deployment to complete..."
+      - kubectl rollout status deployment/brain-tasks-app --timeout=600s
+
+      - echo "Deployment completed successfully!"
+      - kubectl get pods
+      - kubectl get services
 artifacts:
   files:
     - '**/*'
